@@ -3,112 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flow Video Prompt Builder</title>
+<title>Video-to-Prompt Analyzer</title>
 <style>
-:root{color-scheme:dark;--bg:#101713;--panel:#19231d;--line:#304338;--green:#40d98a;--muted:#a8b8ae;--danger:#ff8f8f}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eef7f0;font:15px system-ui,Arial,sans-serif}
-main{max-width:850px;margin:28px auto;padding:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
-h1{font-size:25px;margin:0 0 6px}.muted{color:var(--muted)}label.upload{display:block;border:2px dashed #52715e;border-radius:12px;padding:28px;text-align:center;cursor:pointer}
-label.upload:focus-within,label.upload:hover{border-color:var(--green)}input[type=file]{display:none}button{background:var(--green);color:#062313;border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}
-button.secondary{background:#2a3b31;color:#effff4}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible{outline:2px solid #fff;outline-offset:2px}
-video{width:100%;max-height:360px;background:#000;border-radius:10px;margin-top:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.stat{background:#111a14;padding:12px;border-radius:10px}.stat b{display:block;font-size:18px}textarea{width:100%;min-height:330px;background:#0b100d;color:#d8f5e2;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px ui-monospace,monospace}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.note{font-size:13px;color:var(--muted);line-height:1.5}.error{color:var(--danger);margin:12px 0 0}
+:root{color-scheme:dark;--bg:#0d1511;--panel:#17231b;--line:#304a39;--green:#46e595;--muted:#a8b8ae;--danger:#ff9696;--blue:#8fc7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eef7f0;font:15px system-ui,Arial,sans-serif}main{max-width:960px;margin:24px auto;padding:16px}
+h1{font-size:27px;margin:0 0 6px}.muted,.note{color:var(--muted)}.note{font-size:13px;line-height:1.55}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
+.upload{display:block;border:2px dashed #52715e;border-radius:12px;padding:28px;text-align:center;cursor:pointer}.upload:hover,.upload:focus-within{border-color:var(--green)}input[type=file]{display:none}
+video{width:100%;max-height:380px;background:#000;border-radius:10px;margin-top:12px}button{background:var(--green);color:#062313;border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}button.secondary{background:#2a3b31;color:#effff4}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.error{color:var(--danger);line-height:1.5}.success{color:var(--green);line-height:1.5}.progress{height:8px;background:#0b100d;border-radius:99px;overflow:hidden;margin-top:12px}.progress i{display:block;height:100%;width:0;background:var(--green);transition:width .2s}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}.stat{background:#101a14;padding:12px;border-radius:10px}.stat b{display:block;font-size:18px}.stat span{color:var(--muted);font-size:13px}
+textarea{width:100%;min-height:420px;background:#090e0b;color:#d8f5e2;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px ui-monospace,monospace;line-height:1.45}h2,h3{margin-top:0}.hidden{display:none!important}.badge{display:inline-block;color:var(--blue);border:1px solid #42627f;border-radius:99px;padding:3px 8px;font-size:12px;margin-bottom:8px}
 </style>
 </head>
 <body>
 <main>
-  <h1>Flow Video Prompt Builder</h1>
-  <div class="muted">Analisis teknis video tanpa AI atau API.</div>
+  <span class="badge">VIDEO-TO-PROMPT ANALYZER</span>
+  <h1>Analisis Video untuk Google Flow & AI Video</h1>
+  <p class="muted">Ekstrak frame video, analisis adegan dengan AI, dan buat prompt terstruktur yang bisa diedit.</p>
   <section class="card">
-    <label class="upload" for="file" tabindex="0"><strong>Pilih video</strong><br><span class="muted">Video diproses lokal di browser</span></label>
+    <label class="upload" for="file" tabindex="0"><strong>Pilih video reference</strong><br><span class="muted">Frame akan diproses untuk analisis AI</span></label>
     <input id="file" type="file" accept="video/*">
-    <p id="status" class="error" role="alert" hidden></p>
+    <p id="status" class="note" role="status"></p>
     <video id="preview" controls hidden></video>
-    <div id="stats" class="grid" style="margin-top:12px"></div>
+    <div id="stats" class="grid"></div>
+    <div id="progressWrap" class="hidden"><div class="progress"><i id="progress"></i></div><p id="progressText" class="note"></p></div>
+    <div class="actions"><button id="analyze" disabled>Analisis dengan AI</button></div>
+    <p class="note">Video tidak dianalisis sebelum Anda menekan tombol. Frame akan dikirim ke server AI yang Anda konfigurasi. API key tidak disimpan di browser.</p>
   </section>
-  <section class="card">
-    <h3>Instruksi untuk Google Flow</h3>
-    <p class="note">Kode ini menyertakan metadata dan instruksi ketat. Untuk membuat ulang adegan yang sama, unggah juga video asli sebagai reference di Flow. Metadata saja tidak dapat mengenali isi adegan atau menjamin hasil identik.</p>
-    <textarea id="output" spellcheck="false" aria-label="JSON instruksi video" placeholder="Pilih video untuk menghasilkan JSON..." readonly></textarea>
-    <div class="actions">
-      <button id="copy" disabled>Salin JSON</button>
-      <button id="download" class="secondary" disabled>Download JSON</button>
-    </div>
+  <section id="resultCard" class="card hidden">
+    <h2>JSON hasil analisis</h2>
+    <p class="note">Output ini membantu membuat ulang video, tetapi tidak menjamin piksel atau gerakan identik. Untuk hasil paling mirip, unggah video asli sebagai reference di generator yang mendukung reference video.</p>
+    <textarea id="output" spellcheck="false" aria-label="JSON hasil analisis" readonly></textarea>
+    <div class="actions"><button id="copy" disabled>Salin JSON</button><button id="download" class="secondary" disabled>Download JSON</button></div>
   </section>
-  <p class="note">Privasi: file tidak dikirim ke server. Aplikasi hanya membaca metadata melalui elemen video HTML5.</p>
+  <p class="note">Privasi: versi lokal memakai backend Anda sendiri. Jangan menaruh API key di HTML, JavaScript frontend, atau repository GitHub.</p>
 </main>
 <script>
-const fileInput=document.querySelector('#file');
-const video=document.querySelector('#preview');
-const stats=document.querySelector('#stats');
-const status=document.querySelector('#status');
-const output=document.querySelector('#output');
-const copyBtn=document.querySelector('#copy');
-const downloadBtn=document.querySelector('#download');
-let currentUrl=null;
-
-function fmt(n){return Number.isFinite(n)?n.toFixed(2):'Tidak diketahui'}
-function setStatus(message=''){status.textContent=message;status.hidden=!message}
-function resetResult(){output.value='';stats.replaceChildren();copyBtn.disabled=true;downloadBtn.disabled=true}
-function revokeCurrentUrl(){if(currentUrl){URL.revokeObjectURL(currentUrl);currentUrl=null}}
-
-fileInput.addEventListener('change',()=>{
-  const file=fileInput.files?.[0];
-  resetResult();setStatus('');video.hidden=true;video.removeAttribute('src');video.load();revokeCurrentUrl();
-  if(!file)return;
-  if(!file.type.startsWith('video/')){setStatus('File yang dipilih bukan video yang didukung.');return}
-  currentUrl=URL.createObjectURL(file);video.src=currentUrl;
-  video.onloadedmetadata=()=>{
-    const duration=video.duration,width=video.videoWidth,height=video.videoHeight;
-    if(!width||!height){setStatus('Metadata video tidak lengkap atau tidak dapat dibaca browser.');return}
-    const aspectRatio=`${width}:${height}`;
-    const data={
-      app:'Flow Video Prompt Builder',mode:'REFERENCE_VIDEO_RECREATION',source_file:file.name,
-      source_metadata:{duration_seconds:fmt(duration),width,height,aspect_ratio:aspectRatio,file_size_bytes:file.size,frame_rate:'Tidak tersedia melalui browser'},
-      reference_video:'MUST_UPLOAD_ORIGINAL_VIDEO_TO_FLOW_AS_REFERENCE',
-      visual_instructions:[
-        'Use the uploaded reference video as the primary source.',
-        'Preserve the original scene order, subjects, actions, framing, camera movement, lighting, colors, background, and timing as closely as the model allows.',
-        'Do not add, remove, replace, or invent scenes, people, objects, or events.',
-        'Do not stylize or reinterpret the footage.',
-        'Do not add subtitles or on-screen text that are not present in the reference.'
-      ],
-      audio_instructions:{background_music:'REMOVE_COMPLETELY',original_narration:'PRESERVE_IF_REFERENCE_AUDIO_IS_SUPPORTED',narration_language:'KEEP_AS_ORIGINAL',narration_timing:'KEEP_AS_ORIGINAL',additional_music:'NONE',sound_effects:'NONE'},
-      output:{aspect_ratio:aspectRatio,duration_seconds:fmt(duration),instruction:'Match reference duration and aspect ratio.'},
-      limitation:'This JSON cannot describe semantic scene content or guarantee an identical regeneration. For an exactly unchanged picture, retain the original video and edit only its audio.'
-    };
-    output.value=JSON.stringify(data,null,2);video.hidden=false;
-    for(const [label,value] of [['Durasi',fmt(duration)+' detik'],['Resolusi',`${width} × ${height}`],['Rasio',aspectRatio],['Ukuran',(file.size/1048576).toFixed(2)+' MB']]){
-      const el=document.createElement('div');el.className='stat';
-      const bold=document.createElement('b');bold.textContent=value;
-      const caption=document.createElement('span');caption.className='muted';caption.textContent=label;
-      el.append(bold,caption);stats.append(el);
-    }
-    copyBtn.disabled=downloadBtn.disabled=false;
-  };
-  video.onerror=()=>{video.hidden=true;setStatus('Video tidak dapat diputar atau metadata-nya tidak dapat dibaca browser.');revokeCurrentUrl()};
-});
-
-copyBtn.addEventListener('click',async()=>{
-  let copied=false;
-  try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(output.value);copied=true}}
-  catch{}
-  if(!copied){
-    const wasReadonly=output.hasAttribute('readonly');
-    output.removeAttribute('readonly');output.focus();output.select();
-    try{copied=document.execCommand('copy')}catch{}
-    if(wasReadonly)output.setAttribute('readonly','');
-  }
-  if(copied){setStatus('');copyBtn.textContent='Tersalin!';setTimeout(()=>copyBtn.textContent='Salin JSON',1500)}
-  else setStatus('Gagal menyalin otomatis. Pilih JSON secara manual lalu salin.');
-});
-
-downloadBtn.addEventListener('click',()=>{
-  const blob=new Blob([output.value],{type:'application/json'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
-  anchor.href=url;anchor.download='flow-video-prompt.json';document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),0);
-});
-window.addEventListener('pagehide',revokeCurrentUrl);
+const fileInput=document.querySelector('#file'),video=document.querySelector('#preview'),stats=document.querySelector('#stats');
+const statusEl=document.querySelector('#status'),analyzeBtn=document.querySelector('#analyze'),output=document.querySelector('#output');
+const resultCard=document.querySelector('#resultCard'),copyBtn=document.querySelector('#copy'),downloadBtn=document.querySelector('#download');
+const progressWrap=document.querySelector('#progressWrap'),progress=document.querySelector('#progress'),progressText=document.querySelector('#progressText');
+let currentUrl=null,currentFile=null,lastResult=null;
+const fmt=n=>Number.isFinite(n)?n.toFixed(2):'Tidak diketahui';
+function status(message='',kind='note'){statusEl.textContent=message;statusEl.className=kind}
+function revokeUrl(){if(currentUrl){URL.revokeObjectURL(currentUrl);currentUrl=null}}
+function reset(){resultCard.classList.add('hidden');output.value='';lastResult=null;copyBtn.disabled=downloadBtn.disabled=true;stats.replaceChildren();analyzeBtn.disabled=true;status('')}
+function seek(videoEl,time){return new Promise((resolve,reject)=>{const done=()=>{videoEl.removeEventListener('seeked',done);videoEl.removeEventListener('error',fail);resolve()};const fail=()=>{videoEl.removeEventListener('seeked',done);videoEl.removeEventListener('error',fail);reject(new Error('Gagal membaca frame video.'))};if(Math.abs(videoEl.currentTime-time)<.01){requestAnimationFrame(done);return}videoEl.addEventListener('seeked',done,{once:true});videoEl.addEventListener('error',fail,{once:true});videoEl.currentTime=time})}
+async function extractFrames(){
+  const duration=video.duration, count=Math.min(12,Math.max(4,Math.ceil(duration/4))), canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+  const width=Math.min(768,video.videoWidth),height=Math.round(width*video.videoHeight/video.videoWidth);canvas.width=width;canvas.height=height;const frames=[];
+  for(let i=0;i<count;i++){const time=count===1?0:(duration*i/(count-1));await seek(video,time);ctx.drawImage(video,0,0,width,height);frames.push({time_seconds:Number(time.toFixed(2)),image_data_url:canvas.toDataURL('image/jpeg',.78)});progress.style.width=`${Math.round((i+1)/count*100)}%`;progressText.textContent=`Frame ${i+1} dari ${count} diekstrak...`}
+  return frames;
+}
+fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];reset();revokeUrl();if(!file)return;if(!file.type.startsWith('video/')){status('File yang dipilih bukan video.','error');return}currentFile=file;currentUrl=URL.createObjectURL(file);video.src=currentUrl;video.hidden=false;video.onloadedmetadata=()=>{const w=video.videoWidth,h=video.videoHeight;stats.innerHTML=`<div class="stat"><b>${fmt(video.duration)} detik</b><span>Durasi</span></div><div class="stat"><b>${w} × ${h}</b><span>Resolusi</span></div><div class="stat"><b>${w}:${h}</b><span>Rasio</span></div><div class="stat"><b>${(file.size/1048576).toFixed(2)} MB</b><span>Ukuran</span></div>`;analyzeBtn.disabled=false;status('Video siap dianalisis.','success')}});
+analyzeBtn.addEventListener('click',async()=>{if(!currentFile)return;analyzeBtn.disabled=true;progressWrap.classList.remove('hidden');progress.style.width='0%';try{const frames=await extractFrames();progressText.textContent='Mengirim frame ke backend AI...';const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_file:currentFile.name,source_metadata:{duration_seconds:Number(video.duration.toFixed(2)),width:video.videoWidth,height:video.videoHeight,aspect_ratio:`${video.videoWidth}:${video.videoHeight}`},frames})});const body=await res.json();if(!res.ok)throw new Error(body.error||'Backend AI gagal menganalisis video.');lastResult=body;output.value=JSON.stringify(body,null,2);resultCard.classList.remove('hidden');copyBtn.disabled=downloadBtn.disabled=false;progressText.textContent='Analisis selesai.';status('Analisis selesai. Periksa dan edit prompt sebelum digunakan.','success')}catch(err){status(err.message,'error');progressText.textContent='Analisis gagal.'}finally{analyzeBtn.disabled=false}});
+copyBtn.addEventListener('click',async()=>{let copied=false;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(output.value);copied=true}}catch{}if(!copied){const ro=output.hasAttribute('readonly');output.removeAttribute('readonly');output.focus();output.select();try{copied=document.execCommand('copy')}catch{}if(ro)output.setAttribute('readonly','')}if(copied){status('JSON berhasil disalin.','success');copyBtn.textContent='Tersalin!';setTimeout(()=>copyBtn.textContent='Salin JSON',1500)}else status('Salin manual: pilih teks JSON lalu tekan Ctrl/Cmd+C.','error')});
+downloadBtn.addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([output.value],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='video-analysis-prompt.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),0)});
+window.addEventListener('pagehide',revokeUrl);
 </script>
 </body>
 </html>
