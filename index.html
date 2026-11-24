@@ -91,11 +91,17 @@ fileInput.addEventListener('change',()=>{
 });
 
 copyBtn.addEventListener('click',async()=>{
-  try{
-    if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(output.value);
-    else{output.removeAttribute('readonly');output.select();document.execCommand('copy');output.setAttribute('readonly','');}
-    copyBtn.textContent='Tersalin!';setTimeout(()=>copyBtn.textContent='Salin JSON',1500);
-  }catch{setStatus('Gagal menyalin otomatis. Pilih JSON secara manual lalu salin.');}
+  let copied=false;
+  try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(output.value);copied=true}}
+  catch{}
+  if(!copied){
+    const wasReadonly=output.hasAttribute('readonly');
+    output.removeAttribute('readonly');output.focus();output.select();
+    try{copied=document.execCommand('copy')}catch{}
+    if(wasReadonly)output.setAttribute('readonly','');
+  }
+  if(copied){setStatus('');copyBtn.textContent='Tersalin!';setTimeout(()=>copyBtn.textContent='Salin JSON',1500)}
+  else setStatus('Gagal menyalin otomatis. Pilih JSON secara manual lalu salin.');
 });
 
 downloadBtn.addEventListener('click',()=>{
