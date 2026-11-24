@@ -8,11 +8,14 @@ Gunakan Node.js 18 atau lebih baru:
 
 ```bash
 cp .env.example .env
-# Isi OPENAI_API_KEY dan VISION_MODEL di .env
-export OPENAI_API_KEY="..."
-export VISION_MODEL="gpt-4o-mini"
+# Isi GEMINI_API_KEY dan VISION_MODEL di .env, atau export langsung:
+export GEMINI_API_KEY="AIza..."
+export GEMINI_API_BASE="https://generativelanguage.googleapis.com/v1beta/openai/"
+export VISION_MODEL="gemini-2.5-flash"
 npm start
 ```
+
+Buat API key di [Google AI Studio](https://aistudio.google.com/apikey). Di repository ini, Gemini dipasang di environment backend melalui `GEMINI_API_KEY`, bukan di `index.html`. Backend juga mengenali `GOOGLE_API_KEY`. Google mendokumentasikan endpoint OpenAI-compatible Gemini di `https://generativelanguage.googleapis.com/v1beta/openai/`; pilih `VISION_MODEL` yang tersedia dan mendukung input gambar pada akun Anda.
 
 Buka <http://localhost:8765>.
 

@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const PORT = Number(process.env.PORT || 8765);
-const API_BASE = (process.env.OPENAI_API_BASE || 'https://api.openai.com/v1').replace(/\/$/, '');
-const API_KEY = process.env.OPENAI_API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.OPENAI_API_KEY;
+const API_BASE = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
+  ? process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/openai/'
+  : process.env.OPENAI_API_BASE || 'https://api.openai.com/v1').replace(/\/$/, '');
 const MODEL = process.env.VISION_MODEL || 'gpt-4o-mini';
 const MAX_BODY = 24 * 1024 * 1024;
 
